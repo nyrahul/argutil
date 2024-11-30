@@ -1,0 +1,3 @@
+Supported options:
+	-n|--nodes  => lists nodes from the clusters. 
+	-s|--spec : => search filter for cluster names (regex based). 
