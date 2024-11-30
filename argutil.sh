@@ -1,7 +1,7 @@
 #!/bin/bash
 
-arg_shortopts="h"
-arg_longopts="help "
+arg_shortopts=""
+arg_longopts=" "
 declare -A arg_desclist
 declare -A arg_handlers
 declare -A arg_nvlist
