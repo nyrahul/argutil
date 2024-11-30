@@ -11,6 +11,9 @@ argopt()
 	mand=""
 	arg=""
 	handler="none"
+	sopt=""
+	desc=""
+	lopt=""
 	OPTS=$(getopt -o "s:l:d:" --long "needval sopt: lopt: desc: reqarg mandatory handler:" -n 'parse-options' -- "$@")
     eval set -- "$OPTS"
     while true; do
@@ -38,7 +41,7 @@ argopt()
 arghelp()
 {
 	echo "Supported options:"
-	printf '\t%s\n' "${arg_desclist[@]}"
+	printf "\t%s\n" "${arg_desclist[@]}"
 }
 
 arghandle()
