@@ -62,7 +62,7 @@ argrun()
     eval set -- "$OPTS"
     while true; do
 		case "$1" in
-			-h | --help) arghelp; exit 2;;
+			-h | --help) arghelp; return 2;;
 			--) shift; break ;;
 			*) arghandle ${1/--/} $2; shift $?;;
 		esac
