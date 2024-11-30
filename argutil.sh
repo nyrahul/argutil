@@ -77,7 +77,7 @@ argrun()
 		case "$1" in
 			-h | --help) arghandle "help"; return 2;;
 			--) shift; break ;;
-			*) arghandle ${1/--/} $2; shift $?;;
+			*) arghandle ${1/--/} "$2"; shift $?;;
 		esac
     done
 }
