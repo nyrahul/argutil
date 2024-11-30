@@ -1,38 +1,60 @@
 #!/bin/bash
 
-TMPDIR=/tmp/argutil-test-$$
+. cmd.sh
 
-. ../argutil.sh
+testfail=0
+testcnt=0
 
-nodes_handler()
+print_status()
 {
-	echo "setting show nodes"
-	show_nodes=1
+	echo "Tests total : $testcnt"
+	echo "Tests failed: $testfail"
 }
 
-spec_handler()
+status_fail()
 {
-	echo "handling spec_handler"
+	echo "TEST FAIL: $1"
 }
 
-cluster_list_cmd()
+test_help()
 {
-	argopt 	--sopt "s" \
-			--lopt "spec" \
-			--needval \
-			--desc "search filter for cluster names (regex based)" \
-	    	--handler "spec_handler"
-	argopt 	--sopt "n" \
-			--lopt "nodes" \
-			--desc "lists nodes from the clusters" \
-			--handler "nodes_handler"
-	argrun "$@"
+	# help check
+	out=$(cluster_list_cmd --help)
+	[[ $? -ne 2 ]] && status_fail "help did not return the right return value" && return 1
+	[[ "$(cat exp_help.txt)" != "$out" ]] && \
+		status_fail "help did not return the right output" && return 1
+	return 0
 }
 
-mkdir -p $TMPDIR
-cluster_list_cmd --help > $TMPDIR/out.txt
-diff $TMPDIR/out.txt exp_help.txt
+test_spec()
+{
+	# spec check
+	out=$(cluster_list_cmd --spec xyz)
+	[[ $? -ne 0 ]] && status_fail "spec did not return the right return value" && return 1
+	[[ "handling spec_handler option=[xyz]" != "$out" ]] && \
+		status_fail "spec did not return the right output" && return 1
+	return 0
+}
 
-rm -rf $TMPDIR
+test_nodes()
+{
+	out=$(cluster_list_cmd --nodes)
+	[[ $? -ne 0 ]] && status_fail "nodes did not return the right return value" && return 1
+	[[ "setting show nodes" != "$out" ]] && \
+		status_fail "nodes did not return the right output" && return 1
 
+	return 0
+}
 
+run_tests()
+{
+	for t in $(declare -F | grep "declare -f test_" | awk '{print $3}'); do
+		echo "executing [$t] ..."
+		((testcnt++))
+		$t
+		[[ $? -ne 0 ]] && ((testfail++))
+	done
+}
+
+run_tests
+print_status
