@@ -42,6 +42,7 @@ arghelp()
 {
 	echo "Supported options:"
 	printf "\t%s\n" "${arg_desclist[@]}"
+	return 2
 }
 
 arghandle()
