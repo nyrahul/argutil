@@ -2,7 +2,7 @@
 
 arg_shortopts=""
 arg_longopts=" "
-declare -A arg_desclist
+declare -a arg_desclist
 declare -A arg_handlers
 declare -A arg_nvlist
 
@@ -14,6 +14,8 @@ argopt()
 	sopt=""
 	desc=""
 	lopt=""
+	soptdesc=""
+	optdesc=""
 	OPTS=$(getopt -o "s:l:d:" --long "needval sopt: lopt: desc: reqarg mandatory handler:" -n 'parse-options' -- "$@")
     eval set -- "$OPTS"
     while true; do
@@ -30,9 +32,11 @@ argopt()
         esac
     done
 	[[ "$lopt" == "" ]] && echo "ERROR(argopt): long option is a mandatory field!" && return 1
-	arg_desclist["$lopt"]=$(echo "-$sopt|--$lopt $arg => $desc. $mand")
+	[[ "$sopt" != "" ]] && soptdesc="-$sopt | "
+	[[ "$arg" != "" ]] && optdesc="[value] "
+	arg_desclist+=("$soptdesc--$lopt $optdesc=> $desc. $mand")
 	arg_handlers["$lopt"]=$handler
-	arg_shortopts="$arg_shortopts$sopt$arg"
+	[[ "$sopt" != "" ]] && arg_shortopts="$arg_shortopts$sopt$arg"
 	arg_longopts="$arg_longopts$lopt$arg "
 	arg_nvlist["$lopt"]=$arg
 	return 0
@@ -41,17 +45,26 @@ argopt()
 arghelp()
 {
 	echo "Supported options:"
+	echo ;
 	printf "\t%s\n" "${arg_desclist[@]}"
-	return 2
 }
 
 arghandle()
 {
 	handler=${arg_handlers["$1"]}
 	needval=${arg_nvlist["$1"]}
-	[[ "$needval" == ":" ]] && $handler "$2" && return 2
-	$handler
+	[[ "$needval" == ":" ]] && $handler "$1" "$2" && return 2
+	$handler "$1"
 	return 1
+}
+
+arginit()
+{
+	arg_shortopts=()
+	arg_longopts=()
+	arg_desclist=()
+	arg_handlers=()
+	arg_nvlist=()
 }
 
 argrun()
@@ -62,7 +75,7 @@ argrun()
     eval set -- "$OPTS"
     while true; do
 		case "$1" in
-			-h | --help) arghelp; return 2;;
+			-h | --help) arghandle "help"; return 2;;
 			--) shift; break ;;
 			*) arghandle ${1/--/} $2; shift $?;;
 		esac
